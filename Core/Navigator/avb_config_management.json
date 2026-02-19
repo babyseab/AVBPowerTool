@@ -1,0 +1,16 @@
+{
+    "Description": "Manage, import and export config file from this page.",
+    "Frontend": "ConfigManagerUI.py",
+    "Name": "Config Manager",
+    "Next": [
+        "import_config.json",
+        "export_config.json",
+        "manage_config_info.json"
+    ],
+    "Previous": "main_navigation.json",
+    "Selection": [
+        "I",
+        "E",
+        "M"
+    ]
+}

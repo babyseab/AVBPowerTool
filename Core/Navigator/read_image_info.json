@@ -1,0 +1,9 @@
+{
+    "Description": "Read AVB configs of all images in working dir.",
+    "Frontend": "ReadImageInfoUI.py",
+    "Name": "Read Image Info",
+    "Next": [
+        "END"
+    ],
+    "Previous": "main_navigation.json"
+}

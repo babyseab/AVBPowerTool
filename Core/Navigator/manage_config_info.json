@@ -1,0 +1,9 @@
+{
+    "Description": "Manage configs added to AVBPowerTool.",
+    "Frontend": "ConfigLibManagerUI.py",
+    "Name": "Config Library Manager",
+    "Next": [
+        "END"
+    ],
+    "Previous": "avb_config_management.json"
+}
