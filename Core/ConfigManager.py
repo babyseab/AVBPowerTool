@@ -2,7 +2,7 @@
 ConfigManager provides useful functions for config management, including import, export and delete.
 Batch operation are also supported.
 
-Config files are placed in child folders of `configSet` and `key` folders.
+Config files are placed in child folders of `Configs` and `key` folders.
 
 This module will export zip files with flag file as exported config.
 
@@ -28,12 +28,13 @@ class ConfigManager:
 
     def saveAsPersistentConfig(self, configName) -> bool:
         try:
-            for i in os.listdir("./currentConfigs/" + configName):
-                shutil.copy("./currentConfigs",
-                            "./configSet/" + configName + "/" + i)
-            for i in os.listdir("./key/currentKeySet/" + configName):
-                shutil.copy("./key/currentKeySet",
-                            "./key/" + configName + "/" + i)
+            for i in os.listdir(os.path.join(os.getcwd(), "Core", "currentConfigs", configName)):
+                shutil.copy(os.path.join(os.getcwd(), "Core", "currentConfigs"),
+                            os.path.join(os.getcwd(), "Configs", configName, i))
+            for i in os.listdir(os.path.join(os.getcwd(), "Core", "Keys", "currentKeySet", configName)):
+                shutil.copy(os.path.join(os.getcwd(), "Core", "Keys", "currentKeySet"),
+                            os.path.join(os.getcwd(), "Core", "Keys", configName, i))
+            self.myLogger.log("I", "Config saved.", self.TAG)
             return True
         except Exception as e:
             self.myLogger.log("W", "Failed to save config: ", self.TAG)
@@ -43,12 +44,12 @@ class ConfigManager:
     def setConfigActive(self, configName) -> bool:
         try:
             self.setConfigDeactivate()
-            for i in os.listdir("./configSet/" + configName):
-                shutil.copy("./configSet/" + configName + "/" + i,
-                            "./currentConfigs")
-            for i in os.listdir("./key/" + configName):
-                shutil.copy("./key/" + configName + "/" + i,
-                            "./key/currentKeySet")
+            for i in os.listdir(os.path.join(os.getcwd(), "Configs", configName)):
+                shutil.copy(os.path.join(os.getcwd(), "Configs", configName, i),
+                            os.path.join(os.getcwd(), "Core", "currentConfigs"))
+            for i in os.listdir(os.path.join(os.getcwd(), "Core", "Keys", configName)):
+                shutil.copy(os.path.join(os.getcwd(), "Core", "Keys", configName, i),
+                            os.path.join(os.getcwd(), "Core", "Keys", "currentKeySet"))
             return True
         except Exception as e:
             self.myLogger.log("W", "Failed to switch config " + configName + " active: ", self.TAG)
@@ -57,10 +58,10 @@ class ConfigManager:
     
     def setConfigDeactivate(self) -> bool:
         try:
-            for i in os.listdir("./currentConfigs"):
-                os.remove("./currentConfigs/" + i)
-            for i in os.listdir("./key/currentKeySet"):
-                os.remove("./key/currentKeySet/" + i)
+            for i in os.listdir(os.path.join(os.getcwd(), "Core", "currentConfigs")):
+                os.remove(os.path.join(os.getcwd(), "currentConfigs", i))
+            for i in os.listdir(os.path.join(os.getcwd(), "Core", "Keys", "currentKeySet")):
+                os.remove(os.path.join(os.getcwd(), "Core", "Keys", "currentKeySet", i))
             return True
         except Exception as e:
             self.myLogger.log("W", "Failed to deactivate current config: ", self.TAG)
@@ -70,49 +71,63 @@ class ConfigManager:
 
     def removeSingleConfig(self, configName) -> bool:
         try:
-            shutil.rmtree("./configSet/" + configName)
-            shutil.rmtree("./key/" + configName)
+            shutil.rmtree(os.path.join(os.getcwd(), "Configs", configName))
+            shutil.rmtree(os.path.join(os.getcwd(), "Core", "Keys", configName))
             return True
         except Exception as e:
             self.myLogger.log("W", "Failed to remove config: " + configName, self.TAG)
             self.myLogger.log("W", str(e), self.TAG)
             return False
 
-    def batchImportConfig(self, importFromDir = "./", importFromFileName = "myBatchConfig.zip"):
-        EXTRACT_ZIP_TO = "./temp/extractedConfigZips"
+    def checkConfigType(self, importFromDir = os.getcwd(), fileName = "myConfig.zip"):
+        if fileName.endswith(".zip"):
+            with zipfile.ZipFile(os.path.join(importFromDir, fileName), 'r') as myZip:
+                fileInfoList = myZip.infolist()
+                isBatch = False
+                isSingleConfig = False
+                for i in fileInfoList:
+                    if i.filename == "BATCH_CONFIG_AVBPOWERTOOL":
+                        isBatch = True
+                    elif i.filename == "this_is_a_config_file_of_avbpowertool":
+                        isSingleConfig = True
+                if isBatch and isSingleConfig:
+                    return "INVALID"
+                elif isBatch:
+                    return "BATCH"
+                elif isSingleConfig:
+                    return "SINGLE"
+                else:
+                    return "INVALID"
+        else:
+            return "INVALID"
+        
+    def batchImportConfig(self, importFromDir = os.getcwd(), importFromFileName = "myBatchConfig.zip"):
+        EXTRACT_ZIP_TO = os.path.join(os.getcwd(), "Core", "temp", "extractedConfigZips")
+        if self.checkConfigType(importFromDir = importFromDir, fileName = importFromFileName) in ("INVALID", "SINGLE"):
+            self.myLogger.log("W", "Attempting to import a invalid file %s from directory %s"%(importFromFileName, importFromDir), self.TAG)
+            raise RuntimeError("Attempting to import a invalid file.")
+        else:
+            self.myLogger.log("I", "Valid single config %s from directory %s."%(importFromFileName, importFromDir), self.TAG)
         with zipfile.ZipFile(importFromDir + importFromFileName, 'r') as myZip:
             fileInfoList = myZip.infolist()
             fileNameList = []
-            isBatchConfigValid = False
-            isSingleConfigFlagExist = False
             for i in fileInfoList:
-                if i.filename == "BATCH_CONFIG_AVBPOWERTOOL":
-                    isBatchConfigValid = True
-                elif i.filename == "this_is_a_config_file_of_avbpowertool":
-                    isSingleConfigFlagExist = True 
-                else:
+                if i.filename != "BATCH_CONFIG_AVBPOWERTOOL":
                     fileNameList.append(i.filename)
-            if isBatchConfigValid:
-                self.myLogger.log("V", "Valid batch config.", self.TAG)
-            else:
-                self.myLogger.log("W", "Invalid zip file!", self.TAG)
-                if isSingleConfigFlagExist:
-                    self.myLogger.log("W", "Attempting to import a single config zip.", self.TAG)
-                return
             myZip.extractall(path = EXTRACT_ZIP_TO)
             configList = os.listdir(EXTRACT_ZIP_TO)
-            os.remove(EXTRACT_ZIP_TO + "/" + "BATCH_CONFIG_AVBPOWERTOOL")
+            os.remove(os.path.join(EXTRACT_ZIP_TO, "BATCH_CONFIG_AVBPOWERTOOL"))
             for i in configList:
                 self.importSingleConfig(importFromDir = EXTRACT_ZIP_TO,
                                         importFromFileName = i)
             shutil.rmtree(EXTRACT_ZIP_TO)
     
     def batchExportConfig(self,
-                          exportToDir = "./",
+                          exportToDir = os.getcwd(),
                           exportToFileName = "myBatchConfig.zip",
                           selectedConfigs = ["current"]):
-        SINGLE_CONFIG_EXPORT_TO = "./temp/exportSingleConfigZips"
-        with zipfile.ZipFile(exportToDir + exportToFileName, 'w') as myZip:
+        SINGLE_CONFIG_EXPORT_TO = os.path.join(os.getcwd(), "Core", "temp", "exportSingleConfigZips")
+        with zipfile.ZipFile(os.path.join(exportToDir, exportToFileName), 'w') as myZip:
             for i in selectedConfigs:
                 self.exportSingleConfig(exportConfigFolderName = i,
                                         exportToDir = SINGLE_CONFIG_EXPORT_TO,
@@ -123,13 +138,13 @@ class ConfigManager:
                     arcName = os.path.relpath(filePath, os.path.dirname(i))
                     myZip.write(filePath, arcName)
                     self.myLogger.log("V", filePath, self.TAG)
-            with open(SINGLE_CONFIG_EXPORT_TO + "/" + "BATCH_CONFIG_AVBPOWERTOOL", "w") as myFile:
+            with open(os.path.join(SINGLE_CONFIG_EXPORT_TO, "BATCH_CONFIG_AVBPOWERTOOL"), "w") as myFile:
                 myFile.write("Batch config of AVBPowerTool.")
-            myZip.write(SINGLE_CONFIG_EXPORT_TO + "/" + "BATCH_CONFIG_AVBPOWERTOOL")
+            myZip.write(os.path.join(SINGLE_CONFIG_EXPORT_TO, "BATCH_CONFIG_AVBPOWERTOOL"))
         shutil.rmtree(SINGLE_CONFIG_EXPORT_TO)
 
     def importSingleConfig(self,
-                           importFromDir = "./",
+                           importFromDir = os.getcwd(),
                            importFromFileName = "myConfig.zip"):
         '''
         Import a *valid* config zip file.
@@ -141,24 +156,23 @@ class ConfigManager:
         :return: None
         '''
 
-        EXTRACT_TO = "./temp/unZippedConfig"
-        with zipfile.ZipFile(importFromDir + importFromFileName, 'r') as myZip:
+        EXTRACT_TO = os.path.join(os.getcwd(), "Core", "temp", "unZippedConfig")
+        if self.checkConfigType(importFromDir = importFromDir, fileName = importFromFileName) != "SINGLE":
+            self.myLogger.log("W", "Invalid single zip config file %s from directory %s"%(importFromFileName, importFromDir), self.TAG)
+            raise RuntimeError("Invalid zip file!")
+        else:
+            self.myLogger.log("I", "Valid single config %s from directory %s."%(importFromFileName, importFromDir), self.TAG)
+        with zipfile.ZipFile(os.path.join(importFromDir, importFromFileName), 'r') as myZip:
             fileInfoList = myZip.infolist()
             fileNameList = []
             renameBeforeImport = False
-            isValidConfig = False
             for i in fileInfoList:
                 if i.filename == "RENAME_REQUIRED":
                     renameBeforeImport = True
                 elif i.filename == "this_is_a_config_file_of_avbpowertool":
-                    isValidConfig = True
+                    pass
                 else:
                     fileNameList.append(i.filename)
-            if not isValidConfig:
-                self.myLogger.log("W", "Invalid zip file.", self.TAG)
-                return
-            else:
-                self.myLogger.log("V", "Config is valid.", self.TAG)
             configName = importFromFileName.strip(".zip")
             if renameBeforeImport:
                 configName = self.__getNewConfigName()
@@ -168,8 +182,8 @@ class ConfigManager:
                 pass
             myZip.extractall(path = EXTRACT_TO)
             try:
-                os.remove(EXTRACT_TO + "/" + "RENAME_REQUIRED")
-                os.remove(EXTRACT_TO + "/" + "this_is_a_config_file_of_avbpowertool")
+                os.remove(os.path.join(EXTRACT_TO, "RENAME_REQUIRED"))
+                os.remove(os.path.join(EXTRACT_TO, "this_is_a_config_file_of_avbpowertool"))
             except:
                 pass
             self.myLogger.log("V", "Successfully extracted config to temporary folder.", self.TAG)
@@ -178,46 +192,46 @@ class ConfigManager:
             if renameBeforeImport:
                 # rename one, copy one at once, and then remove.
                 # config folder goes first.
-                os.rename(EXTRACT_TO + "/" + "currentConfigs",
-                          EXTRACT_TO + "/" + configName)
-                shutil.copytree(EXTRACT_TO + "/" + configName,
-                                "./configSet/" + configName)
-                shutil.rmtree(EXTRACT_TO + "/" + configName)
+                os.rename(os.path.join(EXTRACT_TO, "currentConfigs"),
+                          os.path.join(EXTRACT_TO, configName))
+                shutil.copytree(os.path.join(EXTRACT_TO, configName),
+                                os.path.join(os.getcwd(), "Configs", configName))
+                shutil.rmtree(os.path.join(EXTRACT_TO, configName))
                 # then process keySet folder
-                os.rename(EXTRACT_TO + "/" + "currentKeySet",
-                          EXTRACT_TO + "/" + configName)
-                shutil.copytree(EXTRACT_TO + "/" + configName,
-                                "./key/" + configName)
-                shutil.rmtree(EXTRACT_TO + "/" + configName)
+                os.rename(os.path.join(EXTRACT_TO, "currentKeySet"),
+                          os.path.join(EXTRACT_TO, configName))
+                shutil.copytree(os.path.join(EXTRACT_TO, configName),
+                                os.path.join(os.getcwd(), "Keys", configName))
+                shutil.rmtree(os.path.join(EXTRACT_TO, configName))
             else:
                 # check the availability of config name first
                 if not self.__isConfigAvailable(configName):
                     # if not available, request a new config name.
                     # call to self.__getNewConfigName() should be avoided at frontend to avoid troubles when switching to GUI.
-                    tmpFileName = os.listdir("./temp/unZippedConfig/configSet")[0]
+                    tmpFileName = os.listdir(os.path.join(os.getcwd(), "temp", "unZippedConfig", "Configs"))[0]
                     configName = self.__getNewConfigName()
                     # rename one, copy one at once, and then remove.
                     # config folder goes first.
-                    os.rename(EXTRACT_TO + "/configSet/" + tmpFileName,
-                            EXTRACT_TO + "/configSet/" + configName)
-                    shutil.copytree(EXTRACT_TO + "/configSet/" + configName,
-                                    "./configSet/" + configName)
-                    shutil.rmtree(EXTRACT_TO + "/configSet/" + configName)
+                    os.rename(os.path.join(EXTRACT_TO, "Configs", tmpFileName),
+                            os.path.join(EXTRACT_TO, "Configs" + configName))
+                    shutil.copytree(os.path.join(EXTRACT_TO, "Configs", configName),
+                                    os.path.join(os.getcwd(), "Configs", configName))
+                    shutil.rmtree(os.path.join(EXTRACT_TO, "Configs", configName))
                     # then process keySet folder
-                    os.rename(EXTRACT_TO + "/key/" + tmpFileName,
-                            EXTRACT_TO + "/key/" + configName)
-                    shutil.copytree(EXTRACT_TO + "/key/" + configName,
-                                    "./key/" + configName)
-                    shutil.rmtree(EXTRACT_TO + "/key/" + configName)
+                    os.rename(os.path.join(EXTRACT_TO, "Keys", tmpFileName),
+                            os.path.join(EXTRACT_TO, "Keys", configName))
+                    shutil.copytree(os.path.join(EXTRACT_TO, "Keys", configName),
+                                    os.path.join(os.getcwd(), "Core", "Keys", configName))
+                    shutil.rmtree(os.path.join(EXTRACT_TO, "Core", "Keys", configName))
                 else:
                     # if available, copy them directly.
                     # we should keep this control flow only in the final version.
-                    shutil.copytree(EXTRACT_TO + "/configSet/" + configName,
-                                    "./configSet/" + configName)
-                    shutil.rmtree(EXTRACT_TO + "/configSet/" + configName)
-                    shutil.copytree(EXTRACT_TO + "/key/" + configName,
-                                    "./key/" + configName)
-                    shutil.rmtree(EXTRACT_TO + "/key/" + configName)
+                    shutil.copytree(os.path.join(EXTRACT_TO, "Configs", configName),
+                                    os.path.join(os.getcwd(), "Configs", configName))
+                    shutil.rmtree(os.path.join(EXTRACT_TO, "Configs", configName))
+                    shutil.copytree(os.path.join(EXTRACT_TO, "Keys", configName),
+                                    os.path.join(os.getcwd(), "Core", "Keys", configName))
+                    shutil.rmtree(os.path.join(EXTRACT_TO, "Keys", configName))
             self.myLogger.log("V", "Successfully copied config to target folder.", self.TAG)
         shutil.rmtree(EXTRACT_TO)
         self.myLogger.log("V", "Successfully removed temp folder.", self.TAG)
@@ -230,7 +244,7 @@ class ConfigManager:
         :return: True when config name available, False when config name is taken by another existing config.
         '''
         configNameInUse = ["currentConfigs", "current"]
-        for folderName in os.listdir("./configSet"):
+        for folderName in os.listdir(os.path.join(os.getcwd(), "Configs")):
             configNameInUse.append(folderName)
         return not configName in configNameInUse
 
@@ -258,7 +272,7 @@ class ConfigManager:
 
     def exportSingleConfig(self,
                            exportConfigFolderName = "current",
-                           exportToDir = "./",
+                           exportToDir = os.getcwd(),
                            exportToFileName = "myConfig.zip") -> None:
         """
         Export a single config as a zip file (with *valid* flag) to the directory you assigned.
@@ -276,10 +290,11 @@ class ConfigManager:
         """
         
         if exportConfigFolderName == "current":
-            foldersRequired = ("./currentConfigs", "./key/currentKeySet")
+            foldersRequired = (os.path.join(os.getcwd(), "currentConfigs"),
+                               os.path.join(os.getcwd(), "Core", "Keys", "currentKeySet"))
         else:
-            foldersRequired = ("./configSet/" + exportConfigFolderName,
-                               "./key/" + exportConfigFolderName)
+            foldersRequired = (os.path.join(os.getcwd(), "Configs", exportConfigFolderName),
+                               os.path.join(os.getcwd(), "Core", "Keys", exportConfigFolderName))
         
         if not exportToFileName.endswith(".zip"):
             self.myLogger.log("W", "Attempting to use other file extension name while exporting config.", self.TAG)
@@ -288,7 +303,7 @@ class ConfigManager:
             raise FileNotFoundError("Assigning a config folder that does not exist.")
         
 
-        with zipfile.ZipFile(exportToDir + exportToFileName, 'w') as myZip:
+        with zipfile.ZipFile(os.path.join(exportToDir, exportToFileName), 'w') as myZip:
             for i in foldersRequired:
                 for root, dirs, fileNames in os.walk(i):
                     for fileName in fileNames:
