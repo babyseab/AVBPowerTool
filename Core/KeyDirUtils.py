@@ -1,4 +1,4 @@
-import os, subprocess, LogUtils
+import os, subprocess, LogUtils, EnvironmentChecker
 
 class KeyDirUtils:
 
@@ -9,7 +9,7 @@ class KeyDirUtils:
         else:
             self.myLogger = logger
         self.myLogger.log("I", "Instance of KeyDirUtils successfully created.", "KeyDirUtils")
-    def generateKeyFileCache(self, keyFileDir = "./key/currentKeySet", cacheFileName = "keyCache.cache"):
+    def generateKeyFileCache(self, keyFileDir = os.path.join(os.getcwd(), "Core", "currentKeySet"), cacheFileName = "keyCache.cache"):
         try:
             os.remove(keyFileDir + cacheFileName)
         except:
@@ -25,29 +25,32 @@ class KeyDirUtils:
             pass
     
     def __getSha1(self, keyFileDir, fileName):
+        commandHeader = EnvironmentChecker.EnvironmentChecker.detect_python_command()
+        if commandHeader is None:
+            raise RuntimeError("Unable to find proper Python")
         if os.name == 'nt':
-            subprocess.run(["py",
-                            "./avbtool.py",
+            subprocess.run([commandHeader,
+                            os.path.join(os.getcwd(), "Core", "avbtool.py"),
                             "extract_public_key",
                             "--key",
-                            keyFileDir + fileName,
+                            os.path.join(keyFileDir, fileName),
                             "--output",
-                            keyFileDir + fileName.strip(".pem") + "_pub.bin"])
+                            os.path.join(keyFileDir, fileName.strip(".pem") + "_pub.bin")])
             return subprocess.run(["certutil",
                                    "-hashfile",
-                                   keyFileDir + fileName.strip(".pem") + "_pub.bin",
+                                   os.path.join(keyFileDir, fileName.strip(".pem") + "_pub.bin"),
                                    "sha1"],
                                    capture_output = True,
                                    text = True).stdout.split("\n")[1]
         else:
-            subprocess.run(["python3",
-                            "./avbtool.py",
+            subprocess.run([commandHeader,
+                            os.path.join(os.getcwd(), "Core", "avbtool.py"),
                             "extract_public_key",
                             "--key",
-                            keyFileDir + fileName,
+                            os.path.join(keyFileDir, fileName),
                             "--output",
-                            keyFileDir + fileName.strip(".pem") + "_bin.bin"])
+                            os.path.join(keyFileDir, fileName.strip(".pem") + "_pub.bin")])
             return subprocess.run(["sha1sum",
-                                   keyFileDir + fileName.strip(".pem") + "_pub.bin"],
+                                   os.path.join(keyFileDir, fileName.strip(".pem") + "_pub.bin")],
                                    capture_output = True,
                                    text = True).stdout.split("  ")[0]
