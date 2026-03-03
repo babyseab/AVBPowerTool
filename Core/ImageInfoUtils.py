@@ -90,12 +90,12 @@ class ImageInfoUtils:
                     self.myLogger.log("W", "You are running this program on Windows, Linux environment is recommended.")
             raise RuntimeError("avbtool.py encountered an issue, fix it and restart the program.")
 
-    '''
-    Convert string result to a dictionary that contains footer info.
-    Will call private method __generateConfigDict() or __generateConfigDictVB() to finally generate result dictionary.
-    isVBmetaImage is an optional arg that allows you to parse image as vbmeta format.
-    '''
     def __imageInfoParser(self, imageInfoString : str, isVBmetaImage = False) -> dict:
+        '''
+        Convert string result to a dictionary that contains footer info.
+        Will call private method __generateConfigDict() or __generateConfigDictVB() to finally generate result dictionary.
+        isVBmetaImage is an optional arg that allows you to parse image as vbmeta format.
+        '''
         if isVBmetaImage:
             self.myLogger.log("I", "Processing a VBMeta image.", "imageInfoParser")
         colonPosition = -1
@@ -227,19 +227,19 @@ class ImageInfoUtils:
         resultDic["Props"] = propDic
         return resultDic
 
-    '''
-    Provide a dictionary with necessary data:
-    Actual Image Size,
-    Public Key,
-    Algorithm,
-    Rollback Index,
-    Hash Algorithm,
-    Partition Name,
-    Salt,
-    Prop (Saved in a sub-dictionary),
-    Descriptor Type [Hash|Hashtree]
-    '''
     def __generateConfigDict(self, imageInfoDic : dict) -> dict:
+        '''
+        Provide a dictionary with necessary data:
+        Actual Image Size,
+        Public Key,
+        Algorithm,
+        Rollback Index,
+        Hash Algorithm,
+        Partition Name,
+        Salt,
+        Prop (Saved in a sub-dictionary),
+        Descriptor Type [Hash|Hashtree]
+        '''
         resultDic = imageInfoDic
         # Remove useless keys
         excludedKeyList = ["Footer version", "Original image size", "VBMeta offset",
