@@ -1,5 +1,5 @@
-import LogUtils
-import os, json
+import LogUtils, EnvironmentChecker
+import os, json, subprocess
 
 DEBUG = True
 
@@ -49,8 +49,7 @@ class ConfigParser:
         except FileNotFoundError:
             self.myLogger.log("E", "File not found! Check your \"currentConfigs\" dir.")
             raise FileNotFoundError
-        finally:
-            return imageList
+        return imageList
     
     def buildSingleAvbtoolCommand(self, singleConfigDict : dict):
         """
@@ -65,9 +64,10 @@ class ConfigParser:
         if "vbmeta" in singleConfigDict["Image File"].lower():
             isVbmeta = True
         # Determine python and script file
-        commandList = ["python3", os.path.join(os.getcwd(), "Core", "avbtool.py")]
-        if os.name == "nt":
-            commandList[0] = "py"
+        commandHeader = EnvironmentChecker.EnvironmentChecker.detect_python_command()
+        if commandHeader is None:
+            raise RuntimeError("Unable to find proper Python")
+        commandList = [commandHeader, os.path.join(os.getcwd(), "Core", "avbtool.py")]
         # Detect image type and take proper action
         if isVbmeta:
             self.myLogger.log("I", "Generating VBMeta generation command for " + singleConfigDict["Image File"] + ".", self.TAG)
@@ -96,6 +96,9 @@ class ConfigParser:
             else:
                 self.myLogger.log("I", "Adding hashtree footer command.", self.TAG)
                 commandList.append("add_hashtree_footer")
+                if os.name == "nt":
+                    commandList.append("--do_not_generate_fec")
+                    self.myLogger.log("W", "Running on Windows, skipping FEC encoding.", self.TAG)
             # Add common args for non-vbmeta images
             if not os.path.exists(os.path.join(self.__IMAGE_DIR, singleConfigDict["Image File"])):
                 raise RuntimeError("Required image %s not found!"%(os.path.join(self.__IMAGE_DIR, singleConfigDict["Image File"])))
