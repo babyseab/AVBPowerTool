@@ -3,20 +3,13 @@ AVB (Android Verified Boot) 信息解析器
 """
 from typing import Any, Dict
 import importlib.util, sys, os
+import ConfigParser
 
 def load_avb_data() -> Dict[str, Any]:
     """
     加载AVB字典数据
     实际使用时，可以从文件读取或直接使用给定的字典
     """
-    try:
-        spec : importlib.util.__spec__ = importlib.util.spec_from_file_location(name = "ConfigParser", 
-                                                                                location = os.path.join(os.getcwd(), "Core", "ConfigParser.py"))
-        ConfigParser = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(ConfigParser)
-        sys.modules["ConfigParser"] = ConfigParser
-    except ImportError as e:
-        print(e)
 
     myConfigParser = ConfigParser.ConfigParser()
     return myConfigParser.json2Dic()
