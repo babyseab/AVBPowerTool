@@ -3,3 +3,7 @@
 /Logs/
 /Core/currentConfigs
 /Images/*.img
+/Configs/*
+/.vscode/
+/.venv/
+/Keys/*
