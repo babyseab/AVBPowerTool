@@ -6,11 +6,11 @@ from Core import LogUtils
 if __name__ == "__main__":
     TAG = "Main"
     try:
+        print("Checking directory correctness.")
         current_file = os.path.abspath(__file__)
         current_dir = os.path.dirname(current_file)
-        print(current_dir)
         os.chdir(current_dir)
-        print(os.getcwd())
+        print("Current work directory: " + os.getcwd())
     except Exception as e:
         print("Exception happened when handling working directory:", e)
         exit()
