@@ -76,7 +76,7 @@ class BaseUI:
             self.myLogger.log("I", "Successfully imported module %s from %s"%(moduleName, moduleDir), self.TAG)
             return ImportedModule
         except Exception as e:
-            self.myLogger.log("W", "Exception happened when importing module: " + repr(e), self.TAG)
+            self.myLogger.log("W", "Exception happened when importing module ", moduleName, ": " + repr(e), self.TAG)
             return None
     
     def _createInstance(self, module, className, logger):
