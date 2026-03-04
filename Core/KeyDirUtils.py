@@ -9,7 +9,9 @@ class KeyDirUtils:
         else:
             self.myLogger = logger
         self.myLogger.log("I", "Instance of KeyDirUtils successfully created.", "KeyDirUtils")
-    def generateKeyFileCache(self, keyFileDir = os.path.join(os.getcwd(), "Core", "currentKeySet"), cacheFileName = "keyCache.cache"):
+    def generateKeyFileCache(self, keyFileDir = None, cacheFileName = "keyCache.cache"):
+        if keyFileDir is None:
+            keyFileDir = os.path.join(os.getcwd(), "Core", "currentKeySet")
         try:
             os.remove(keyFileDir + cacheFileName)
         except:

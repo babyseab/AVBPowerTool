@@ -51,7 +51,9 @@ class BaseUI:
     def _importFrontEndModule(self, moduleName : str) -> object:
         return self._importModule(moduleName, os.path.join(os.getcwd(), "Core", "Frontend"))
     
-    def _importModule(self, moduleName : str, moduleDir = os.path.join(os.getcwd(), "Core")):
+    def _importModule(self, moduleName : str, moduleDir = None):
+        if moduleDir is None:
+            moduleDir = os.path.join(os.getcwd(), "Core")
         moduleName = moduleName.rstrip(".py")
         self.myLogger.log("D", "Importing module: " + moduleName, self.TAG)
         self.myLogger.log("D", "Complete path: " + os.path.join(moduleDir, moduleName + ".py"), self.TAG)

@@ -2,16 +2,16 @@
 AVB (Android Verified Boot) 信息解析器
 """
 from typing import Any, Dict
-import importlib.util, sys, os
+import os
 import ConfigParser
 
-def load_avb_data() -> Dict[str, Any]:
+def load_avb_data(logger) -> Dict[str, Any]:
     """
     加载AVB字典数据
     实际使用时，可以从文件读取或直接使用给定的字典
     """
 
-    myConfigParser = ConfigParser.ConfigParser()
+    myConfigParser = ConfigParser.ConfigParser(logger=logger)
     return myConfigParser.json2Dic()
     
 def get_chinese_key_name(key: str) -> str:
@@ -132,7 +132,7 @@ def print_partition(partition_name: str, partition_data: Dict[str, Any]):
     else:
         print(f"└─ {get_chinese_key_name('Props')}: (无)")
 
-def entry():
+def entry(logger):
     """主函数"""
     os.system("cls") if os.name == "nt" else os.system("clear")
     print("=" * 80)
@@ -140,7 +140,7 @@ def entry():
     print("=" * 80)
     
     # 加载数据
-    avb_data = load_avb_data()
+    avb_data = load_avb_data(logger)
     
     # 按顺序输出所有分区
     partition_order = [
@@ -160,6 +160,3 @@ def entry():
     
     print("\n" + "=" * 80)
     input("解析完成，按回车键继续")
-
-if __name__ == "__main__":
-    entry()

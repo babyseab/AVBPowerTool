@@ -3,9 +3,6 @@ import os, subprocess, json, importlib.util, sys
 
 class SignImages:
 
-    TAG = "ImageSigner"
-    __IMAGE_DIR = os.path.join(os.getcwd(), "Images")
-
     def __init__(self, logger = None) -> None:
         if not logger:
             self.myLogger = LogUtils.LogUtils()
@@ -15,9 +12,13 @@ class SignImages:
         self.myConfigParser = self._createInstance(self._importModule("ConfigParser"),
                                                    "ConfigParser",
                                                    self.myLogger)
+        self.TAG = "ImageSigner"
+        self.__IMAGE_DIR = os.path.join(os.getcwd(), "Images")
         self.myLogger.log("I", "Instance of SignImages successfully created.", "SignImages")
     
-    def _importModule(self, moduleName : str, moduleDir = os.path.join(os.getcwd(), "Core")):
+    def _importModule(self, moduleName : str, moduleDir = None):
+        if moduleDir is None:
+            moduleDir = os.path.join(os.getcwd(), "Core")
         moduleName = moduleName.rstrip(".py")
         try:
             spec : importlib.util.__spec__ = importlib.util.spec_from_file_location(moduleName,
@@ -87,10 +88,7 @@ class SignImages:
         print()
 
     def signImagesBatch(self,
-                        imageConfigFileDir = os.path.join(os.getcwd(),
-                                                          "Core",
-                                                          "currentConfigs",
-                                                          "imageInfo.json"),
+                        imageConfigFileDir = None,
                         removeFootersFirst = False,
                         removeVB = True):
         """
@@ -100,6 +98,11 @@ class SignImages:
         :param removeFootersFirst: Choose whether the program removes footers before signing process.
         :param removeVB: Whether the program removes vbmeta images before signing. (Will generate new vbmeta images.)
         """
+        if imageConfigFileDir is None:
+            imageConfigFileDir = os.path.join(os.getcwd(),
+                                                          "Core",
+                                                          "currentConfigs",
+                                                          "imageInfo.json")
         if not imageConfigFileDir.endswith(".json"):
             imageConfigFileDir += "imageInfo.json"
         if removeFootersFirst:

@@ -1,4 +1,4 @@
-import BaseUI
+import Core.Frontend.BaseUI as BaseUI
 
 class HomePageUI(BaseUI.BaseUI):
 
@@ -12,7 +12,7 @@ class HomePageUI(BaseUI.BaseUI):
     def callBackEnd(self, functionName: str):
         self.handleBackAndExit(functionName)
         if functionName == "View current config info":
-            self.DisplayAVBInfo.entry()
+            self.DisplayAVBInfo.entry(self.myLogger) # type: ignore
 
 if __name__ == "__main__":
     myHomePage = HomePageUI()

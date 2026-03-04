@@ -89,7 +89,9 @@ class ConfigManager:
             self.myLogger.log("W", str(e), self.TAG)
             return False
 
-    def checkConfigType(self, importFromDir = os.getcwd(), fileName = "myConfig.zip"):
+    def checkConfigType(self, importFromDir = None, fileName = "myConfig.zip"):
+        if importFromDir is None:
+            importFromDir = os.getcwd()
         if fileName.endswith(".zip"):
             with zipfile.ZipFile(os.path.join(importFromDir, fileName), 'r') as myZip:
                 fileInfoList = myZip.infolist()
@@ -111,7 +113,9 @@ class ConfigManager:
         else:
             return "INVALID"
         
-    def batchImportConfig(self, importFromDir = os.getcwd(), importFromFileName = "myBatchConfig.zip"):
+    def batchImportConfig(self, importFromDir = None, importFromFileName = "myBatchConfig.zip"):
+        if importFromDir is None:
+            importFromDir = os.getcwd()
         EXTRACT_ZIP_TO = os.path.join(os.getcwd(), "Core", "temp", "extractedConfigZips")
         if self.checkConfigType(importFromDir = importFromDir, fileName = importFromFileName) in ("INVALID", "SINGLE"):
             self.myLogger.log("W", "Attempting to import a invalid file %s from directory %s"%(importFromFileName, importFromDir), self.TAG)
@@ -133,9 +137,11 @@ class ConfigManager:
             shutil.rmtree(EXTRACT_ZIP_TO)
     
     def batchExportConfig(self,
-                          exportToDir = os.getcwd(),
+                          exportToDir = None,
                           exportToFileName = "myBatchConfig.zip",
                           selectedConfigs = ["current"]):
+        if exportToDir is None:
+            exportToDir = os.getcwd()
         SINGLE_CONFIG_EXPORT_TO = os.path.join(os.getcwd(), "Core", "temp", "exportSingleConfigZips")
         with zipfile.ZipFile(os.path.join(exportToDir, exportToFileName), 'w') as myZip:
             for i in selectedConfigs:
@@ -154,7 +160,7 @@ class ConfigManager:
         shutil.rmtree(SINGLE_CONFIG_EXPORT_TO)
 
     def importSingleConfig(self,
-                           importFromDir = os.getcwd(),
+                           importFromDir = None,
                            importFromFileName = "myConfig.zip"):
         '''
         Import a *valid* config zip file.
@@ -165,7 +171,8 @@ class ConfigManager:
         :param importFromFileName: Which config file should the method use.
         :return: None
         '''
-
+        if importFromDir is None:
+            importFromDir = os.getcwd()
         EXTRACT_TO = os.path.join(os.getcwd(), "Core", "temp", "unZippedConfig")
         if self.checkConfigType(importFromDir = importFromDir, fileName = importFromFileName) != "SINGLE":
             self.myLogger.log("W", "Invalid single zip config file %s from directory %s"%(importFromFileName, importFromDir), self.TAG)
@@ -282,7 +289,7 @@ class ConfigManager:
 
     def exportSingleConfig(self,
                            exportConfigFolderName = "current",
-                           exportToDir = os.getcwd(),
+                           exportToDir = None,
                            exportToFileName = "myConfig.zip") -> None:
         """
         Export a single config as a zip file (with *valid* flag) to the directory you assigned.
@@ -298,7 +305,8 @@ class ConfigManager:
         :return: None
         :raise FileNotFoundError: Config folder assigned not exist.
         """
-        
+        if exportToDir is None:
+            exportToDir = os.getcwd()
         if exportConfigFolderName == "current":
             foldersRequired = (os.path.join(os.getcwd(), "Core", "currentConfigs"),
                                os.path.join(os.getcwd(), "Core", "currentKeySet"))
@@ -331,7 +339,9 @@ class ConfigManager:
                 myZip.write("RENAME_REQUIRED")
                 os.remove("RENAME_REQUIRED")
     
-    def getAllConfigs(self, configDir = os.path.join(os.getcwd(), "Configs")):
+    def getAllConfigs(self, configDir = None):
+        if configDir is None:
+            os.path.join(os.getcwd(), "Configs")
         configList = []
         for i in os.listdir(configDir):
             configList.append(i)

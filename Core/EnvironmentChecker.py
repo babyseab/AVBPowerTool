@@ -54,3 +54,20 @@ class EnvironmentChecker:
         
         # 如果没有找到任何可用的命令，返回None
         return None
+    
+    @staticmethod
+    def check_necessary_folders(logger):
+        TAG = "FolderChecker"
+        folderTuple = ("Images",
+                       "Configs",
+                       os.path.join("Core", "currentConfigs"),
+                       os.path.join("Core", "currentKeySet"))
+        workDir = os.getcwd()
+        currentDir = ""
+        for i in folderTuple:
+            currentDir = os.path.join(workDir, i)
+            if not os.path.exists(currentDir):
+                os.mkdir(currentDir)
+                logger.log("I", "Folder %s does not exist, automatically created it."%(i), TAG)
+            else:
+                logger.log("I", "Folder %s exists."%(i), TAG)
