@@ -21,7 +21,7 @@ class KeyDirUtils:
                 for root, dirs, fileNames in os.walk(keyFileDir):
                     for fileName in fileNames:
                         if fileName.endswith(".pem"):
-                            self.myLogger.log("V", "Key file detected:" + fileName)
+                            self.myLogger.log("T", "Key file detected:" + fileName)
                             myFile.write(fileName + ", " + self.__getSha1(keyFileDir, fileName) + "\n")
         except:
             pass

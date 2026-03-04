@@ -153,7 +153,7 @@ class ConfigManager:
                     filePath = os.path.join(root, fileName)
                     arcName = os.path.relpath(filePath, os.path.dirname(i))
                     myZip.write(filePath, arcName)
-                    self.myLogger.log("V", filePath, self.TAG)
+                    self.myLogger.log("T", filePath, self.TAG)
             with open(os.path.join(SINGLE_CONFIG_EXPORT_TO, "BATCH_CONFIG_AVBPOWERTOOL"), "w") as myFile:
                 myFile.write("Batch config of AVBPowerTool.")
             myZip.write(os.path.join(SINGLE_CONFIG_EXPORT_TO, "BATCH_CONFIG_AVBPOWERTOOL"))
@@ -203,7 +203,7 @@ class ConfigManager:
                 os.remove(os.path.join(EXTRACT_TO, "this_is_a_config_file_of_avbpowertool"))
             except:
                 pass
-            self.myLogger.log("V", "Successfully extracted config to temporary folder.", self.TAG)
+            self.myLogger.log("T", "Successfully extracted config to temporary folder.", self.TAG)
             # default configs will be extracted to ./temp/unZippedConfig/currentConfigs
             # and ./temp/unZippedConfig/currentKeySet
             if renameBeforeImport:
@@ -249,9 +249,9 @@ class ConfigManager:
                     shutil.copytree(os.path.join(EXTRACT_TO, "Keys", configName),
                                     os.path.join(os.getcwd(), "Keys", configName))
                     shutil.rmtree(os.path.join(EXTRACT_TO, "Keys", configName))
-            self.myLogger.log("V", "Successfully copied config to target folder.", self.TAG)
+            self.myLogger.log("T", "Successfully copied config to target folder.", self.TAG)
         shutil.rmtree(EXTRACT_TO)
-        self.myLogger.log("V", "Successfully removed temp folder.", self.TAG)
+        self.myLogger.log("T", "Successfully removed temp folder.", self.TAG)
 
     def __isConfigAvailable(self, configName : str):
         '''
@@ -328,7 +328,7 @@ class ConfigManager:
                         filePath = os.path.join(root, fileName)
                         arcName = os.path.relpath(filePath, os.path.dirname(i))
                         myZip.write(filePath, arcName)
-                        self.myLogger.log("V", filePath, self.TAG)
+                        self.myLogger.log("T", filePath, self.TAG)
             with open("this_is_a_config_file_of_avbpowertool", "w") as myTempFile:
                 myTempFile.write("This is a file that indicates the zip archive is a valid config file of AVBPowerTool.")
             myZip.write("this_is_a_config_file_of_avbpowertool")

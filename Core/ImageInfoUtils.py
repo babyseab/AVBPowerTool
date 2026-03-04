@@ -72,7 +72,7 @@ class ImageInfoUtils:
         # Add capture_output and text args to ensure object "result" contains output content    
         result = subprocess.run(commandList, capture_output=True, text=True)
         if result.returncode == 0:
-            self.logIfDebug("V", "Successfully executed \"avbtool info_image\" command.")
+            self.logIfDebug("T", "Successfully executed \"avbtool info_image\" command.")
             return str(result.stdout)
         else:
             self.logIfDebug("W", "avbtool.py returned non-zero exit code. Check next line of log for detailed information.")
@@ -102,10 +102,10 @@ class ImageInfoUtils:
             self.myLogger.log("I", "Processing a VBMeta image.", "imageInfoParser")
         colonPosition = -1
         imageInfoList = imageInfoString.split("\n")
-        self.logIfDebug("V", "Step 1, split image info string into list by symbol \\n:")
+        self.logIfDebug("T", "Step 1, split image info string into list by symbol \\n:")
         for i in imageInfoList:
-            self.logIfDebug("V", i)
-        self.logIfDebug("V", "Step2, delete useless spaces and parse them into key-value pairs.")
+            self.logIfDebug("T", i)
+        self.logIfDebug("T", "Step2, delete useless spaces and parse them into key-value pairs.")
         propCount = 0
         '''
         Less information are required when creating a vbmeta image.
@@ -127,7 +127,7 @@ class ImageInfoUtils:
             while i < infoListLength:
                 if encounterStringDesc:
                     if "Chain" in imageInfoList[i]:
-                        self.logIfDebug("V", "Found chain partition.")
+                        self.logIfDebug("T", "Found chain partition.")
                         # In case the output sequence changes, use loop instead of hard-coded position
                         # Find partition name
                         for j in range(i + 1, i + 5): # Each chain partition has a 4-line descriptor
@@ -144,14 +144,14 @@ class ImageInfoUtils:
                                 break
                         # Find public key SHA1
                         for j in range(i + 1, i + 5):
-                            self.logIfDebug("V", "Process chain partition key.")
+                            self.logIfDebug("T", "Process chain partition key.")
                             if "Public key" in imageInfoList[j]:
                                 colonPosition = imageInfoList[j].find(":")
                                 tempDic = {"Public key (sha1)" : imageInfoList[j][colonPosition + 1:].strip(" ")}
                                 resultDic["Chain partition key"].append(self.__autoDetectKeyBin(self.__autoDetectKeyFile(tempDic)["Public key file"]))
                         i += 5
                     elif "Hash descriptor" in imageInfoList[i]:
-                        self.logIfDebug("V", "Found hash descriptor.")
+                        self.logIfDebug("T", "Found hash descriptor.")
                         for j in range(i + 1, i + 7): # Each partition with a hash desc has a 6-line descriptor
                             if "Name" in imageInfoList[j]:
                                 colonPosition = imageInfoList[j].find(":")
@@ -159,7 +159,7 @@ class ImageInfoUtils:
                                 break
                         i += 7
                     elif "Hashtree descriptor" in imageInfoList[i]:
-                        self.logIfDebug("V", "Found hashtree descriptor.")
+                        self.logIfDebug("T", "Found hashtree descriptor.")
                         for j in range(i + 1, i + 15): # Each partition with a hashtree desc has a 14-line descriptor
                             if "Name" in imageInfoList[j]:
                                 colonPosition = imageInfoList[j].find(":")
@@ -167,7 +167,7 @@ class ImageInfoUtils:
                                 break
                         i += 15
                     elif "Prop" in imageInfoList[i]:
-                        self.logIfDebug("V", "Prop string detected.")
+                        self.logIfDebug("T", "Prop string detected.")
                         colonPosition = imageInfoList[i].find(":")
                         resultDic["Prop" + str(propCount)] = imageInfoList[i][colonPosition + 1:].strip(" ")
                         propCount += 1
@@ -190,9 +190,9 @@ class ImageInfoUtils:
                 colonPosition = -1
                 colonPosition = i.find(":")
                 if colonPosition != -1:
-                    self.logIfDebug("V", "Find separator in line: " + i)
+                    self.logIfDebug("T", "Find separator in line: " + i)
                     if "Prop" in i[:colonPosition].strip(" "):
-                        self.logIfDebug("V", "Prop string detected.")
+                        self.logIfDebug("T", "Prop string detected.")
                         resultDic[i[:colonPosition].strip(" ") + str(propCount)] = i[colonPosition + 1:].strip(" ")
                         propCount += 1
                     else:
@@ -320,11 +320,11 @@ class ImageInfoUtils:
             for j in imageInfoDic:
                 # Look for Public key value
                 if j == "Public key (sha1)":
-                    self.myLogger.log("V", "Public key SHA1: " + imageInfoDic[j], "autoDetectKeyFile")
+                    self.myLogger.log("T", "Public key SHA1: " + imageInfoDic[j], "autoDetectKeyFile")
                     # Start auto-matching once found public key SHA1
                     for k in range(len(sha1List)):
                         if sha1List[k][1] == imageInfoDic[j]:
-                            self.myLogger.log("V", "Key file: " + sha1List[k][0], "autoDetectKeyFile")
+                            self.myLogger.log("T", "Key file: " + sha1List[k][0], "autoDetectKeyFile")
                             imageInfoDicCopy["Public key file"] = sha1List[k][0]
             return imageInfoDicCopy
     

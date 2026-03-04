@@ -17,6 +17,7 @@ class NavigationEngine:
 
     def __parseNavigationJSON(self, mapDir : str) -> dict:
         with open(mapDir, "r", encoding = "UTF-8") as myJSONFile:
+            self.myLogger.log("D", "Successfully opened file: " + mapDir, self.TAG)
             return json.load(myJSONFile)
     
     def refreshNodeInfo(self):
@@ -30,6 +31,12 @@ class NavigationEngine:
         self.currentNodeNext = self.currentDic.get("Next", ["Unknown"])
         self.currentNodeSelections = self.currentDic.get("Selection", ["Unknown"])
         self.currentNodeFrontEnd = self.currentDic.get("Frontend", "Unknown")
+        # self.myLogger.log("T", "Successfully refreshed node info:", self.TAG)
+        # self.myLogger.log("T", "Node name: " + self.currentNodeName, self.TAG)
+        # self.myLogger.log("T", "Node description: " + self.currentNodeDesc, self.TAG)
+        # self.myLogger.log("T", "Previous node(s): " + str(self.currentNodePrev), self.TAG)
+        # self.myLogger.log("T", "Next node(s): " + str(self.currentNodeNext), self.TAG)
+        # self.myLogger.log("T", "Use frontend: " +self.currentNodeFrontEnd, self.TAG)
     
     def getNextNodeNames(self) -> dict:
         if self.currentDic["Next"][0] == "END":
@@ -66,10 +73,13 @@ class NavigationEngine:
     # Argument "nodeName" is reserved for situations with multiple upper-level nodes.
     def goToUpperLevel(self) -> None:
         if self.currentDic["Previous"] == "END":
+            self.myLogger.log("E", "Attempting to navigate to an unexisting upper level node.", self.TAG)
             raise RuntimeError("Attempting to navigate to an unexisting upper level node.")
         nodeName = self.currentDic["Previous"]
+        self.myLogger.log("D", "Go to upper level, nodename: " + nodeName, self.TAG)
         self.previousNodes.append(self.currentFileDir)
         self.currentFileDir = os.path.join(self.navigatorDir, nodeName)
+        self.myLogger.log("D", "Using file from " + self.currentFileDir, self.TAG)
         self.refreshNodeInfo()
 
 
