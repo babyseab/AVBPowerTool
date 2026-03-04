@@ -19,7 +19,7 @@ Install Python 3.9 or above and run these commands in your terminal:
 ```
 git clone https://github.com/WASDDestroy/AVBPowerTool.git
 cd AVBPowerTool
-python3 ./Core/Frontend/HomePageUI.py # Consider use py or python if you are on Windows
+python3 main.py # Consider use py or python if you are on Windows
 ```
 
 Then start using it.
