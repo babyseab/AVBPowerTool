@@ -31,4 +31,5 @@ Then start using it.
 - [ ] Interface for importing, exporting and manage configs
 - [ ] Transplant FEC to Windows
 - [ ] Check whether current images have satisfied requirements of making vbmeta images
+- [ ] Allow using arrow keys to navigate options instead of entering choice
 - [ ] Code quality improvements
