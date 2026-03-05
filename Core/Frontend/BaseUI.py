@@ -116,8 +116,6 @@ class BaseUI:
         if "back" in functionName.lower():
             self.myLogger.log("I", "Back to upper level.", self.TAG)
             self.myNavigationEngine.goToUpperLevel()
-            self.myNavigationEngine.refreshNodeInfo()
-            self.myLogger.log("I", "Currently using file: " + self.myNavigationEngine.currentFileDir, self.TAG)
             return True
         if functionName == "Exit":
             print("Exiting.")
@@ -169,7 +167,8 @@ class BaseUI:
             functionName = self.nodeFunction[mySelection]
             self.myLogger.log("T", "Function name: " + functionName, self.TAG)
             if self.handleBackAndExit(functionName):
-                return
+                self.myLogger.log
+                return True
             # Check whether function is in next node
             if self.myNavigationEngine.currentDic["Next"][0] != "END":
                 self.myLogger.log("T", "Current node has subnodes, traverse them.", self.TAG)
@@ -182,7 +181,7 @@ class BaseUI:
                         # Found function in one of the next node, dynamically import it and execute entry
                         moduleName = self.myNavigationEngine.currentDic["Frontend"].rstrip(".py")
                         self.myLogger.log("T", "Found function! Corresponding module name: " + moduleName, self.TAG)
-                        self.myLogger.log("T", "Navigate to: " + moduleName, self.TAG)
+                        self.myLogger.log("I", "Navigate to: " + moduleName, self.TAG)
                         myObject = self._createFrontendInstance(self._importFrontEndModule(moduleName),
                                                         moduleName,
                                                         self.myLogger,
@@ -205,10 +204,13 @@ class BaseUI:
         if navigationEngine is not None:
             self.myLogger.log("D", "Use provided navigation engine.", self.TAG)
             self.myNavigationEngine = navigationEngine
-        self.myLogger.log("D", self.myNavigationEngine.currentNodeName, self.TAG)
-        self.myLogger.log("D", self.myNavigationEngine.currentNodeNext, self.TAG)
-        self.showUI()
-        self.handleInteractionLogic()
+        while 1:
+            self.myLogger.log("D", "Currently at: " + self.myNavigationEngine.currentNodeName, self.TAG)
+            self.myLogger.log("D", "Subnodes: " + str(self.myNavigationEngine.currentNodeNext), self.TAG)
+            self.myLogger.log("D", "Previous node: " + str(self.myNavigationEngine.currentNodePrev), self.TAG)
+            self.showUI()
+            if self.handleInteractionLogic():
+                break
 
 if __name__ == "__main__":
     myBaseUI = BaseUI()
