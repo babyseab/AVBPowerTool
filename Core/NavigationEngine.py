@@ -74,6 +74,8 @@ class NavigationEngine:
     def goToUpperLevel(self) -> None:
         if self.currentDic["Previous"] == "END":
             self.myLogger.log("E", "Attempting to navigate to an unexisting upper level node.", self.TAG)
+            self.myLogger.log("E", "Currently at: " + self.currentNodeName, self.TAG)
+            self.myLogger.log("E", "Complete previous stack: " + str(self.currentDic["Previous"]), self.TAG)
             raise RuntimeError("Attempting to navigate to an unexisting upper level node.")
         nodeName = self.currentDic["Previous"]
         self.myLogger.log("D", "Go to upper level, nodename: " + nodeName, self.TAG)
