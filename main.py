@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 from Core.Frontend import HomePageUI
 from Core import EnvironmentChecker
 from Core import LogUtils
@@ -15,7 +16,7 @@ if __name__ == "__main__":
         print("Exception happened when handling working directory:", e)
         exit()
     try:
-        mainLogger = LogUtils.LogUtils(shouldAttachTime = True)
+        mainLogger = LogUtils.LogUtils(shouldAttachTime=True)
         mainLogger.setLogLevel("T")
         if os.path.join(os.getcwd(), "Core", "Frontend") not in sys.path:
             print("Adding frontend dir to system path.")
@@ -30,25 +31,29 @@ if __name__ == "__main__":
         mainLogger.log("I", "OS name: " + os.name, TAG)
     except Exception as e:
         print("Exception happened during early init: " + str(e))
-        mainLogger.log("F", "Exception happened during early init: " + str(e), TAG)
+        mainLogger.log(
+            "F", "Exception happened during early init: " + str(e), TAG)
         exit()
     try:
-        EnvironmentChecker.EnvironmentChecker.check_necessary_folders(mainLogger)
+        EnvironmentChecker.EnvironmentChecker.check_necessary_folders(
+            mainLogger)
         print("Folder check passed.")
         mainLogger.log("I", "Folder check passed.", TAG)
     except Exception as e:
         print("Exception happened when checking necessary folders: " + str(e))
-        mainLogger.log("F", "Exception happened when checking necessary folders: " + str(e), TAG)
+        mainLogger.log(
+            "F", "Exception happened when checking necessary folders: " + str(e), TAG)
         exit()
     try:
         print("Starting interface.")
         mainLogger.log("I", "Starting interface.", TAG)
-        mainUIInstance = HomePageUI.HomePageUI(logger = mainLogger)
+        mainUIInstance = HomePageUI.HomePageUI(logger=mainLogger)
         print("Successfully created UI instance.")
         mainLogger.log("I", "Successfully created UI instance.", TAG)
     except Exception as e:
         print("Exception happened while creating main UI: " + str(e))
-        mainLogger.log("F", "Exception happened while creating main UI: " + str(e), TAG)
+        mainLogger.log(
+            "F", "Exception happened while creating main UI: " + str(e), TAG)
         exit()
     try:
         while 1:
