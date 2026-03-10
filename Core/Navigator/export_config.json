@@ -3,7 +3,10 @@
     "Frontend": "ExportConfigUI.py",
     "Name": "Export Config",
     "Next": [
-        "END"
+        "batch_export_config.json"
     ],
-    "Previous": "avb_config_management.json"
+    "Previous": "avb_config_management.json",
+    "Selection": [
+        "T"
+    ]
 }

@@ -3,7 +3,10 @@
     "Frontend": "ImportConfigUI.py",
     "Name": "Import Config",
     "Next": [
-        "END"
+        "batch_import_config.json"
     ],
-    "Previous": "avb_config_management.json"
+    "Previous": "avb_config_management.json",
+    "Selection": [
+        "T"
+    ]
 }
