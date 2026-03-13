@@ -16,9 +16,8 @@ import Core.LogUtils as LogUtils
 
 class ConfigManager:
 
-    TAG = "ConfigManager"
-
     def __init__(self, logger = None) -> None:
+        self.TAG = "ConfigManager"
         if not logger:
             self.myLogger = LogUtils.LogUtils()
             self.myLogger.log("W", "Logger not given, created an instance just now.", "ConfigManager")
@@ -28,7 +27,7 @@ class ConfigManager:
 
     def save_as_persistent_config(self, config_name) -> bool:
         if not self.__is_config_available(config_name):
-            config_name = self.__get_new_config_name(config_name)
+            config_name = self.get_new_config_name(config_name)
         try:
             self.myLogger.log("I", "Creating config directory in Configs dir.", self.TAG)
             os.mkdir(os.path.join(os.getcwd(), "Configs", config_name))
@@ -49,6 +48,19 @@ class ConfigManager:
         except Exception as e:
             self.myLogger.log("W", "Failed to save config: ", self.TAG)
             self.myLogger.log("W", str(e), self.TAG)
+            return False
+
+    def rename_config(self, old_config_name, new_config_name) -> bool:
+        folder_to_operate = ("Configs", "Keys")
+        try:
+            for i in folder_to_operate:
+                current_working_folder = os.path.join(os.getcwd(), i)
+                self.myLogger.log("D", "Now in: " + current_working_folder, self.TAG)
+                os.rename(os.path.join(current_working_folder, old_config_name), os.path.join(current_working_folder, new_config_name))
+            self.myLogger.log("I", "Successfully renamed " + old_config_name + " to " + new_config_name, self.TAG)
+            return True
+        except Exception as e:
+            self.myLogger.log("W", "Failed to rename config, exception: " + str(e), self.TAG)
             return False
 
     def set_config_active(self, config_name) -> bool:
@@ -213,7 +225,7 @@ class ConfigManager:
             config_name = import_from_file_name.rstrip(".zip")
             rename_before_import = rename_before_import or not self.__is_config_available(config_name)
             if rename_before_import:
-                config_name = self.__get_new_config_name(config_name)
+                config_name = self.get_new_config_name(config_name)
             shutil.rmtree(extract_to, ignore_errors=True)
             myZip.extractall(path = extract_to)
             try:
@@ -249,7 +261,7 @@ class ConfigManager:
             config_name_in_use.append(folder_name)
         return not config_name in config_name_in_use
 
-    def __get_new_config_name(self, current_name):
+    def get_new_config_name(self, current_name, prompt = "To avoid overriding existing files, please provide another config name to continue import process."):
         """
         Private method to get a new config name when rename is required during import.
 
@@ -258,7 +270,7 @@ class ConfigManager:
         :return: Config name string
         """
         print("Current name: " + current_name)
-        print("To avoid overriding existing files, please provide another config name to continue import process.")
+        print(prompt)
         count = 0
         while count < 3:
             new_config_name = input("New config name: ")
