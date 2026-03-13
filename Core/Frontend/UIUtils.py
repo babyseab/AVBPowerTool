@@ -55,33 +55,6 @@ class UIUtils:
         else:
             return False
 
-    def select_config_ui(self):
-        config_names = self.myConfigManager.get_all_configs()
-        for i in range(len(config_names)):
-            print(i + 1, config_names[i])
-        print("Select a config with number. Enter -1 to cancel.")
-        while 1:
-            my_input = input("Your choice: ")
-            try:
-                input_number = int(my_input)
-                if 0 < input_number <= len(config_names):
-                    print("Import file: %s" % (config_names[input_number - 1]))
-                    break
-                elif input_number == -1:
-                    return None
-                else:
-                    raise IndexError
-            except Exception as e:
-                print("Invalid input, try again.")
-                self.myLogger.log(
-                    "W", "Invalid input when selecting config: " + repr(e), self.TAG)
-        print("Select this config? [y/N]", end=" ")
-        if input().upper() == "Y":
-            return config_names[input_number - 1]
-        else:
-            return None
-
-
 class EnhancedFileSelectorUI:
     """
     独立的增强文件选择器组件
@@ -151,22 +124,22 @@ class EnhancedFileSelectorUI:
         my_ui_utils.clear_screen()
 
         # 绘制标题和边框
-        print("=" + "=" * 48 + "=")
-        title_line = f"  {self.title:^46}  "
+        print("=" * 80)
+        title_line = f"  {self.title:^80}  "
         print(title_line)
-        print("=" + "=" * 48 + "=")
+        print("=" * 80)
 
         # 绘制说明
-        print("  Instructions:                               ")
-        print("    ↑/↓ : Navigate items                     ")
+        print("  Instructions:")
+        print("    ↑/↓ : Navigate items")
         if self.multi_select:
-            print("    Space : Select/Deselect current item      ")
-            print("    A     : Select All / Deselect All         ")
+            print("    Space : Select/Deselect current item")
+            print("    A     : Select All / Deselect All")
         else:
-            print("    Space/Enter : Select current item         ")
-        print("    Enter : Confirm selection                 ")
-        print("    ESC   : Cancel                            ")
-        print("=" + "=" * 48 + "=")
+            print("    Space/Enter : Select current item")
+        print("    Enter : Confirm selection")
+        print("    ESC   : Cancel")
+        print("=" * 80)
 
         # 绘制项目列表
         if not self.items:
@@ -192,28 +165,21 @@ class EnhancedFileSelectorUI:
 
                 # 构建显示行
                 line = f"{prefix}{checkbox} {display_item}"
-                line = line.ljust(46)
+                line = line.ljust(80)
                 print(f"  {line}  ")
 
-        print("=" + "=" * 48 + "=")
+        print("=" * 80)
 
         # 绘制状态信息
         if self.multi_select:
             selected_count = len(self.selected_indices)
             status = f"Selected: {selected_count}/{len(self.items)}"
-            print(f"  {status:^46}  ")
-        else:
-            if self.selected_indices:
-                status = "Item selected"
-            else:
-                status = "No item selected"
-            print(f"  {status:^46}  ")
-
-        print("=" + "=" * 48 + "=")
+            print(f"  {status:^80}  ")
+            print("=" * 80)
 
         # 绘制按钮
         print("  [Enter: Confirm]        [ESC: Cancel]       ")
-        print("=" + "=" * 48 + "=")
+        print("=" * 80)
 
     def _process_input(self) -> None:
         """
