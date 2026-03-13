@@ -66,7 +66,7 @@ class EnhancedFileSelectorUI:
     """
 
     def __init__(self, title: str = "Select Files", items: List[str] = None,
-                 multi_select: bool = False, logger = None):  # type: ignore
+                 multi_select: bool = False, logger = None, infinite_roll = True):  # type: ignore
         """
         初始化文件选择器
         Args:
@@ -81,6 +81,7 @@ class EnhancedFileSelectorUI:
         self.current_index = 0
         self.finished = False
         self.cancelled = False
+        self.infinite_roll = infinite_roll
         if logger is None:
             self.my_logger = LogUtils.LogUtils()
         else:
@@ -229,10 +230,14 @@ class EnhancedFileSelectorUI:
         elif key in ['w', 'W', '\x48']:  # Up arrow or W
             if self.current_index > 0:
                 self.current_index -= 1
+            elif self.infinite_roll:
+                self.current_index = len(self.items) - 1
 
         elif key in ['s', 'S', '\x50']:  # Down arrow or S
             if self.current_index < len(self.items) - 1:
                 self.current_index += 1
+            elif self.infinite_roll:
+                self.current_index = 0
 
         elif key == ' ':  # Space
             if self.multi_select:
