@@ -28,7 +28,7 @@ class ConfigManager:
 
     def save_as_persistent_config(self, config_name) -> bool:
         if not self.__is_config_available(config_name):
-            config_name = self.__get_new_config_name()
+            config_name = self.__get_new_config_name(config_name)
         try:
             self.myLogger.log("I", "Creating config directory in Configs dir.", self.TAG)
             os.mkdir(os.path.join(os.getcwd(), "Configs", config_name))
@@ -118,20 +118,22 @@ class ConfigManager:
         if import_from_dir is None:
             import_from_dir = os.getcwd()
         extract_zip_to = os.path.join(os.getcwd(), "Core", "temp", "extractedConfigZips")
+        shutil.rmtree(extract_zip_to, ignore_errors=True)
+        os.mkdir(extract_zip_to)
         if self.check_config_type(import_from_dir= import_from_dir, file_name= import_from_file_name) in ("INVALID", "SINGLE"):
             self.myLogger.log("W", "Attempting to import a invalid file %s from directory %s" % (import_from_file_name, import_from_dir), self.TAG)
             raise RuntimeError("Attempting to import a invalid file.")
         else:
-            self.myLogger.log("I", "Valid single config %s from directory %s." % (import_from_file_name, import_from_dir), self.TAG)
-        with zipfile.ZipFile(import_from_dir + import_from_file_name, 'r') as myZip:
+            self.myLogger.log("I", "Valid batch config %s from directory %s." % (import_from_file_name, import_from_dir), self.TAG)
+        with zipfile.ZipFile(os.path.join(import_from_dir, import_from_file_name), 'r') as myZip:
             file_info_list = myZip.infolist()
             file_name_list = []
             for i in file_info_list:
                 if i.filename != "BATCH_CONFIG_AVBPOWERTOOL":
                     file_name_list.append(i.filename)
             myZip.extractall(path = extract_zip_to)
-            config_list = os.listdir(extract_zip_to)
             os.remove(os.path.join(extract_zip_to, "BATCH_CONFIG_AVBPOWERTOOL"))
+            config_list = os.listdir(extract_zip_to)
             for i in config_list:
                 self.import_single_config(import_from_dir= extract_zip_to,
                                           import_from_file_name= i)
@@ -146,21 +148,30 @@ class ConfigManager:
         if export_to_dir is None:
             export_to_dir = os.getcwd()
         single_config_export_to = os.path.join(os.getcwd(), "Core", "temp", "exportSingleConfigZips")
+        os.mkdir(single_config_export_to)
+        for config_name in selected_configs:
+            self.myLogger.log("I", "Now exporting: " + config_name, self.TAG)
+            self.export_single_config(config_name, single_config_export_to)
+        with open(os.path.join(single_config_export_to, "BATCH_CONFIG_AVBPOWERTOOL"), "w+") as myFile:
+            myFile.write("Batch config of AVBPowerTool.")
+            self.myLogger.log("D", "Created flag file for batch archive.", self.TAG)
         with zipfile.ZipFile(os.path.join(export_to_dir, export_to_file_name), 'w') as myZip:
-            for i in selected_configs:
-                self.export_single_config(export_config_folder_name= i,
-                                          export_to_dir= single_config_export_to,
-                                          export_to_file_name=i + ".zip")
-            for root, dirs, fileNames in os.walk(single_config_export_to):
-                for fileName in fileNames:
-                    file_path = os.path.join(root, fileName)
-                    arc_name = os.path.relpath(file_path, os.path.dirname(i))
-                    myZip.write(file_path, arc_name)
-                    self.myLogger.log("T", file_path, self.TAG)
-            with open(os.path.join(single_config_export_to, "BATCH_CONFIG_AVBPOWERTOOL"), "w") as myFile:
-                myFile.write("Batch config of AVBPowerTool.")
-            myZip.write(os.path.join(single_config_export_to, "BATCH_CONFIG_AVBPOWERTOOL"))
+            self.myLogger.log("D", "Successfully created batch zip archive.", self.TAG)
+            try:
+                for file_name in os.listdir(single_config_export_to):
+                    self.myLogger.log("I", "Adding %s to batch archive." % file_name, self.TAG)
+                    file_path = os.path.join(single_config_export_to, file_name)
+                    arc_path = file_name
+                    myZip.write(file_path, arc_path)
+                    self.myLogger.log("T", "File path: " + file_path, self.TAG)
+                    self.myLogger.log("T", "Arc path: " + arc_path, self.TAG)
+            except Exception as e:
+                self.myLogger.log("E", "Exception happened when batch exporting config: " + str(e), self.TAG)
+                return False
         shutil.rmtree(single_config_export_to)
+        self.myLogger.log("D", "Successfully created batch zip archive.", self.TAG)
+        return True
+
 
     def import_single_config(self,
                              import_from_dir = None,
@@ -196,7 +207,7 @@ class ConfigManager:
             config_name = import_from_file_name.rstrip(".zip")
             rename_before_import = rename_before_import or not self.__is_config_available(config_name)
             if rename_before_import:
-                config_name = self.__get_new_config_name()
+                config_name = self.__get_new_config_name(config_name)
             shutil.rmtree(extract_to, ignore_errors=True)
             myZip.extractall(path = extract_to)
             try:
@@ -232,7 +243,7 @@ class ConfigManager:
             config_name_in_use.append(folder_name)
         return not config_name in config_name_in_use
 
-    def __get_new_config_name(self):
+    def __get_new_config_name(self, current_name):
         """
         Private method to get a new config name when rename is required during import.
 
@@ -240,6 +251,7 @@ class ConfigManager:
 
         :return: Config name string
         """
+        print("Current name: " + current_name)
         print("To avoid overriding existing files, please provide another config name to continue import process.")
         count = 0
         while count < 3:
