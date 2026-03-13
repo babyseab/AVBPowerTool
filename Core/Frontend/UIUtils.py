@@ -54,6 +54,10 @@ class UIUtils:
             return True
         else:
             return False
+    @staticmethod
+    def message_on_fail():
+        print("Please refer to log file for further information.")
+        print("Note: Exit tool, then check log file, otherwise nothing will be shown in latest log.")
 
 class EnhancedFileSelectorUI:
     """

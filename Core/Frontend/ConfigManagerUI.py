@@ -30,8 +30,7 @@ class ConfigManagerUI(BaseUI.BaseUI):
                     print("Old \"active\" config has been removed.")
                 else:
                     print("Failed to set active config to", config_to_active)
-                    print("Please refer to log file for further information.")
-                    print("Note: Exit tool first, then check log file, otherwise nothing will be shown in latest log.")
+                    self.my_ui_utils.message_on_fail()
             else:
                 print("User cancelled operation.")
             self.my_ui_utils.press_enter_to_continue()
@@ -42,6 +41,5 @@ class ConfigManagerUI(BaseUI.BaseUI):
                 print("Successfully saved \"current\" config to persistent file, name: %s." % config_name)
             else:
                 print("Failed to save \"current\" config to persistent file.")
-                print("Please refer to log file for further information.")
-                print("Note: Exit tool, then check log file, otherwise nothing will be shown in latest log.")
+                self.my_ui_utils.message_on_fail()
             self.my_ui_utils.press_enter_to_continue()
